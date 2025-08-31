@@ -1,32 +1,31 @@
 const http = require('http');
+const os = require('os');
 
-// Puerto de escucha
 const port = 3000;
 
-// Función para obtener la IP pública desde la metadata de AWS
-function obtenerIpPublica(callback) {
-  http.get('http://169.254.169.254/latest/meta-data/public-ipv4', (res) => {
-    let data = '';
-    res.on('data', chunk => data += chunk);
-    res.on('end', () => callback(data));
-  }).on('error', (err) => {
-    console.error('Error al obtener IP pública:', err.message);
-    callback('No disponible');
-  });
+// Función para obtener la primera IP local no interna
+function getLocalIp() {
+  const nets = os.networkInterfaces();
+  for (const name of Object.keys(nets)) {
+    for (const net of nets[name]) {
+      if (net.family === 'IPv4' && !net.internal) {
+        return net.address;
+      }
+    }
+  }
+  return 'No disponible';
 }
 
-// Crear servidor
 const server = http.createServer((req, res) => {
-  obtenerIpPublica((ipPublica) => {
-    res.statusCode = 200;
-    res.setHeader('Content-Type', 'text/plain');
-    res.end(`Hola Mundo!\nMi IP es: ${ipPublica}`);
-  });
+  const ip = getLocalIp();
+  res.statusCode = 200;
+  res.setHeader('Content-Type', 'text/plain');
+  res.end(`Hola Mundo!\nMi IP local es: ${ip}`);
 });
 
-// Levantar servidor
 server.listen(port, () => {
-  console.log(`Server running on port: ${port}`);
+  console.log(`Server running on port ${port}`);
 });
+
 
 
