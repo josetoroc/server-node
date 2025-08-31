@@ -34,9 +34,3 @@ server.listen(port, () => {
   console.log(`Prueba en el navegador: http://<IP-de-la-instancia>:${port}/`);
 });
 
-  console.log(`Server running on port ${port}`);
-});
-
-
-
-
